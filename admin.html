@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Control Panel</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; }
+        .login-screen, .panel { max-width: 600px; margin: 50px auto; }
+        input, button { width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; }
+        input { background: #222; color: #0f0; border: 1px solid #0f0; }
+        button { background: #0f0; color: #000; border: none; cursor: pointer; }
+        .stats { background: #111; padding: 20px; margin: 20px 0; border: 1px solid #0f0; }
+        .crypto-box { background: #222; padding: 20px; margin: 20px 0; border: 1px solid #ff0; }
+        .logout { position: fixed; top: 20px; right: 20px; width: auto; }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="login-screen">
+        <h1>🔐 ADMIN ACCESS</h1>
+        <input type="password" id="password" placeholder="Enter password" autocomplete="off">
+        <button onclick="login()">LOGIN</button>
+    </div>
+    
+    <div id="adminPanel" class="panel" style="display:none;">
+        <button class="logout" onclick="logout()">LOGOUT</button>
+        
+        <h1>🖥️ BOTNET CONTROL PANEL</h1>
+        
+        <div class="stats">
+            <h2>💰 REVENUE STATS</h2>
+            <p>Total Earnings: $<span id="totalEarnings">0.00</span></p>
+            <p>Ads Displayed: <span id="totalAds">0</span></p>
+            <p>Active Bots: <span id="activeBots">1000</span></p>
+            <p>Today's Earnings: $<span id="todayEarnings">0.00</span></p>
+        </div>
+        
+        <div class="crypto-box">
+            <h2>₿ CRYPTO WITHDRAWAL</h2>
+            <p>Available: $<span id="availableBalance">0.00</span></p>
+            <input type="text" id="cryptoAddress" placeholder="Your crypto address">
+            <button onclick="withdrawCrypto()">WITHDRAW ALL</button>
+            <p id="withdrawStatus"></p>
+        </div>
+        
+        <div class="stats">
+            <h2>⚙️ BOT CONTROLS</h2>
+            <button onclick="addBots(100)">ADD 100 BOTS</button>
+            <button onclick="addBots(500)">ADD 500 BOTS</button>
+            <button onclick="forceAdCycle()">FORCE AD CYCLE</button>
+        </div>
+        
+        <div class="stats">
+            <h2>📊 LIVE MONITOR</h2>
+            <p>Bot Status: <span style="color:#0f0;">● ACTIVE</span></p>
+            <p>Ad System: <span style="color:#0f0;">● RUNNING</span></p>
+            <p>Connection: <span style="color:#0f0;">● STABLE</span></p>
+            <p>Last Update: <span id="lastUpdate">--:--:--</span></p>
+        </div>
+    </div>
+    
+    <script>
+        const PASSWORD = 'creed111';
+        let bots = 1000;
+        
+        function login() {
+            if(document.getElementById('password').value === PASSWORD) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadDashboard();
+                startLiveUpdate();
+            } else {
+                alert('Wrong password');
+            }
+        }
+        
+        function logout() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+        
+        function loadDashboard() {
+            // Load from localStorage
+            let earnings = localStorage.getItem('ad_earnings') || 0;
+            let adCount = localStorage.getItem('ad_count') || 0;
+            
+            document.getElementById('totalEarnings').textContent = parseFloat(earnings).toFixed(2);
+            document.getElementById('availableBalance').textContent = parseFloat(earnings).toFixed(2);
+            document.getElementById('totalAds').textContent = adCount;
+            document.getElementById('activeBots').textContent = bots;
+            document.getElementById('todayEarnings').textContent = (parseFloat(earnings) * 0.3).toFixed(2);
+        }
+        
+        function withdrawCrypto() {
+            let address = document.getElementById('cryptoAddress').value;
+            let earnings = localStorage.getItem('ad_earnings') || 0;
+            
+            if(!address) {
+                address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'; // Default BTC address
+            }
+            
+            if(parseFloat(earnings) > 0) {
+                document.getElementById('withdrawStatus').innerHTML = 
+                    `✅ $${parseFloat(earnings).toFixed(2)} sent to:<br>
+                    <code>${address}</code><br>
+                    TX: 0x${Math.random().toString(16).slice(2,66)}`;
+                
+                // Reset earnings
+                localStorage.setItem('ad_earnings', 0);
+                loadDashboard();
+            } else {
+                document.getElementById('withdrawStatus').textContent = '❌ No funds available';
+            }
+        }
+        
+        function addBots(count) {
+            bots += count;
+            document.getElementById('activeBots').textContent = bots;
+            
+            // Simulate adding bots to main page
+            if(window.opener) {
+                window.opener.postMessage({type: 'addBots', count: count}, '*');
+            }
+        }
+        
+        function forceAdCycle() {
+            // Force ad on main page
+            if(window.opener) {
+                window.opener.postMessage({type: 'forceAd'}, '*');
+            }
+            
+            // Add immediate earnings
+            let earnings = localStorage.getItem('ad_earnings') || 0;
+            earnings = parseFloat(earnings) + 100;
+            localStorage.setItem('ad_earnings', earnings);
+            loadDashboard();
+        }
+        
+        function startLiveUpdate() {
+            setInterval(() => {
+                document.getElementById('lastUpdate').textContent = 
+                    new Date().toLocaleTimeString();
+                
+                // Update earnings randomly
+                let earnings = localStorage.getItem('ad_earnings') || 0;
+                earnings = parseFloat(earnings) + Math.random() * 10;
+                localStorage.setItem('ad_earnings', earnings.toFixed(2));
+                loadDashboard();
+            }, 5000);
+        }
+        
+        // Listen for messages from main page
+        window.addEventListener('message', (event) => {
+            if(event.data.type === 'adCompleted') {
+                let earnings = localStorage.getItem('ad_earnings') || 0;
+                earnings = parseFloat(earnings) + 100;
+                localStorage.setItem('ad_earnings', earnings.toFixed(2));
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
