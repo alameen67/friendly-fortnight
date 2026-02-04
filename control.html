@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nexus Arena Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0414 0%, #1a0b2e 100%);
+            color: white; font-family: 'Courier New', monospace;
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+            padding: 20px; position: relative; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                       radial-gradient(circle at 80% 70%, rgba(78, 49, 170, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+        .glowing-border {
+            position: relative; background: rgba(26, 11, 46, 0.7); border-radius: 20px;
+            padding: 30px; width: 100%; max-width: 500px; backdrop-filter: blur(10px);
+            box-shadow: 0 0 60px rgba(138, 43, 226, 0.4);
+        }
+        .glowing-border::before {
+            content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, #8a2be2, #4e31aa, #00f3ff, #9d4edd);
+            border-radius: 22px; z-index: -1; animation: borderGlow 3s linear infinite;
+            background-size: 400% 400%;
+        }
+        @keyframes borderGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        h1 {
+            text-align: center; font-size: 2.8rem; margin-bottom: 10px;
+            background: linear-gradient(90deg, #00f3ff, #ff00ff); -webkit-background-clip: text;
+            background-clip: text; color: transparent; text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            letter-spacing: 2px;
+        }
+        .subtitle { text-align: center; color: #9d4edd; margin-bottom: 30px; font-size: 1.1rem; letter-spacing: 1px; }
+        .status-display {
+            background: rgba(10, 4, 20, 0.6); border-radius: 15px; padding: 20px; margin: 20px 0;
+            text-align: center; border: 2px solid; transition: all 0.3s;
+        }
+        .status-on { border-color: #00ff00; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); animation: pulseGreen 2s infinite; }
+        .status-off { border-color: #ff0000; box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); animation: pulseRed 2s infinite; }
+        @keyframes pulseGreen { 0%,100% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); } 50% { box-shadow: 0 0 50px rgba(0, 255, 0, 0.5); } }
+        @keyframes pulseRed { 0%,100% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); } 50% { box-shadow: 0 0 50px rgba(255, 0, 0, 0.5); } }
+        .status-text { font-size: 1.8rem; font-weight: bold; margin-bottom: 10px; }
+        .power-button {
+            background: linear-gradient(45deg, #ff0000, #ff5555); color: white; border: none;
+            width: 100%; padding: 25px; font-size: 1.8rem; font-weight: bold; border-radius: 15px;
+            cursor: pointer; margin: 20px 0; transition: all 0.3s; text-transform: uppercase;
+            letter-spacing: 3px; position: relative; overflow: hidden;
+        }
+        .power-button::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .power-button:hover::before { left: 100%; }
+        .power-button.on { background: linear-gradient(45deg, #00ff00, #00aa00); }
+        .power-button:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 25px 0; }
+        .stat-box {
+            background: rgba(45, 27, 105, 0.5); border-radius: 12px; padding: 15px;
+            text-align: center; border: 1px solid rgba(157, 78, 221, 0.3); transition: all 0.3s;
+        }
+        .stat-box:hover { transform: translateY(-3px); border-color: #00f3ff; box-shadow: 0 5px 20px rgba(0, 243, 255, 0.2); }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); margin-bottom: 5px; }
+        .stat-label { color: #9d4edd; font-size: 0.9rem; letter-spacing: 1px; }
+        .quick-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+        .quick-btn {
+            background: rgba(78, 49, 170, 0.3); border: 2px solid #4e31aa; color: white;
+            padding: 15px; border-radius: 10px; cursor: pointer; transition: all 0.3s;
+            font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 1px;
+        }
+        .quick-btn:hover { background: rgba(78, 49, 170, 0.6); transform: translateY(-3px); border-color: #00f3ff; }
+        .quick-btn.danger { border-color: #ff0000; background: rgba(255, 0, 0, 0.2); }
+        .quick-btn.danger:hover { background: rgba(255, 0, 0, 0.4); }
+        .password-section { margin: 25px 0; }
+        .password-input {
+            width: 100%; padding: 18px; background: rgba(0, 0, 0, 0.4); border: 2px solid #8a2be2;
+            border-radius: 12px; color: white; font-size: 1.2rem; text-align: center;
+            letter-spacing: 2px; margin-bottom: 15px; transition: all 0.3s;
+        }
+        .password-input:focus { outline: none; border-color: #00f3ff; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3); }
+        .login-btn {
+            width: 100%; padding: 18px; background: linear-gradient(45deg, #8a2be2, #4e31aa);
+            color: white; border: none; border-radius: 12px; font-size: 1.3rem;
+            font-weight: bold; cursor: pointer; transition: all 0.3s; letter-spacing: 2px;
+        }
+        .login-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(138, 43, 226, 0.4); }
+        .log-container {
+            background: rgba(10, 4, 20, 0.6); border-radius: 15px; padding: 20px;
+            margin-top: 25px; max-height: 250px; overflow-y: auto; border: 1px solid rgba(157, 78, 221, 0.2);
+        }
+        .log-title { color: #00f3ff; margin-bottom: 15px; font-size: 1.2rem; letter-spacing: 1px; }
+        .log-entry { padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem; color: #888; animation: fadeIn 0.5s; }
+        .log-entry.new { color: #00f3ff; font-weight: bold; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .connection-status {
+            position: fixed; top: 20px; right: 20px; display: flex; align-items: center;
+            gap: 8px; font-size: 0.9rem; color: #888;
+        }
+        .connection-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff0000; animation: blink 1s infinite; }
+        .connection-dot.connected { background: #00ff00; animation: none; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .version { position: fixed; bottom: 15px; right: 15px; color: #4e31aa; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="connection-status">
+        <div class="connection-dot" id="connectionDot"></div>
+        <span id="connectionText">Connecting...</span>
+    </div>
+
+    <div class="glowing-border">
+        <h1>⚡ CONTROL</h1>
+        <div class="subtitle">NEXUS ARENA BOT SYSTEM</div>
+        
+        <div id="loginSection">
+            <div class="password-section">
+                <input type="password" class="password-input" id="password" 
+                       placeholder="ENTER ACCESS CODE" autocomplete="off" maxlength="20">
+                <button class="login-btn" onclick="login()">AUTHENTICATE</button>
+            </div>
+        </div>
+        
+        <div id="controlSection" style="display: none;">
+            <div class="status-display" id="systemStatusDisplay">
+                <div class="status-text" id="statusText">SYSTEM OFFLINE</div>
+                <div id="statusDetails">Waiting for connection...</div>
+            </div>
+            
+            <button class="power-button" id="powerButton" onclick="toggleSystem()">START SYSTEM</button>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="botCount">0</div>
+                    <div class="stat-label">BOTS ONLINE</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="adCount">0</div>
+                    <div class="stat-label">ADS TODAY</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="revenue">$0.00</div>
+                    <div class="stat-label">REVENUE</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="uptime">00:00</div>
+                    <div class="stat-label">UPTIME</div>
+                </div>
+            </div>
+            
+            <div class="quick-controls">
+                <button class="quick-btn" onclick="forceAd()" id="forceAdBtn">📢 FORCE AD</button>
+                <button class="quick-btn" onclick="adjustBots()" id="adjustBtn">🤖 ADJUST BOTS</button>
+                <button class="quick-btn" onclick="viewStats()">📊 FULL STATS</button>
+                <button class="quick-btn danger" onclick="emergencyStop()">🚨 EMERGENCY</button>
+            </div>
+            
+            <div class="log-container">
+                <div class="log-title">SYSTEM LOG</div>
+                <div id="systemLog">
+                    <div class="log-entry">Control panel initialized</div>
+                    <div class="log-entry">Waiting for authentication...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="version">v2.0.1 | NEXUS CONTROL</div>
+
+    <script>
+        const PASSWORD = "nexus777";
+        let systemActive = false;
+        let connected = false;
+        let controlInterval = null;
+        let statsInterval = null;
+        let startTime = Date.now();
+        
+        function initControlSystem() {
+            addLog("Control system initializing...");
+            addLog(`Password: ${PASSWORD}`);
+            connectToMainPage();
+            setInterval(checkConnection, 3000);
+            if(window.location.hash === '#nexus777') {
+                document.getElementById('password').value = PASSWORD;
+                setTimeout(login, 1000);
+            }
+            addLog("Ready for authentication");
+        }
+        
+        function connectToMainPage() {
+            if(window.opener && !window.opener.closed) {
+                try {
+                    window.opener.postMessage({ type: 'CONTROL_PING', timestamp: Date.now() }, '*');
+                    updateConnection(true);
+                    addLog("Connected to main page", true);
+                } catch(e) { updateConnection(false); }
+            } else {
+                updateConnection(checkLocalStorageConnection());
+            }
+        }
+        
+        function checkLocalStorageConnection() {
+            const lastUpdate = localStorage.getItem('nexus_last_update');
+            if(lastUpdate) {
+                const timeDiff = Date.now() - parseInt(lastUpdate);
+                return timeDiff < 10000;
+            }
+            return false;
+        }
+        
+        function updateConnection(isConnected) {
+            connected = isConnected;
+            const dot = document.getElementById('connectionDot');
+            const text = document.getElementById('connectionText');
+            if(connected) {
+                dot.className = 'connection-dot connected';
+                text.textContent = 'CONNECTED';
+                text.style.color = '#00ff00';
+            } else {
+                dot.className = 'connection-dot';
+                text.textContent = 'DISCONNECTED';
+                text.style.color = '#ff0000';
+            }
+        }
+        
+        function checkConnection() {
+            if(connected) {
+                sendCommand('PING');
+                const systemActive = localStorage.getItem('nexus_system_active');
+                if(systemActive === 'true' && !systemActive) {
+                    toggleSystemState(true);
+                } else if(systemActive === 'false' && systemActive) {
+                    toggleSystemState(false);
+                }
+            } else {
+                connectToMainPage();
+            }
+        }
+        
+        function login() {
+            const password = document.getElementById('password').value.trim();
+            if(password === PASSWORD) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('controlSection').style.display = 'block';
+                startControlSystem();
+                addLog("Authentication SUCCESSFUL", true);
+                addLog(`Password: ${PASSWORD}`, true);
+                addLog("Control system activated", true);
+                connectToMainPage();
+            } else if(password === '') {
+                alert("Please enter access code");
+            } else {
+                addLog("Authentication FAILED", true);
+                alert("❌ ACCESS DENIED\nIncorrect password");
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+        }
+        
+        function startControlSystem() {
+            loadSystemState();
+            startStatsUpdate();
+            startCommandListener();
+            updateControlDisplay();
+        }
+        
+        function loadSystemState() {
+            const savedActive = localStorage.getItem('nexus_system_active');
+            systemActive = savedActive === 'true';
+            addLog(`System state: ${systemActive ? 'ACTIVE' : 'INACTIVE'}`);
+            updateControlDisplay();
+        }
+        
+        function toggleSystem() {
+            systemActive = !systemActive;
+            sendCommand(systemActive ? 'START' : 'STOP');
+            localStorage.setItem('nexus_system_active', systemActive.toString());
+            updateControlDisplay();
+            addLog(`System ${systemActive ? 'STARTED' : 'STOPPED'}`, true);
+            if(systemActive) setTimeout(updateStats, 2000);
+        }
+        
+        function toggleSystemState(active) {
+            systemActive = active;
+            updateControlDisplay();
+            addLog(`System ${active ? 'activated' : 'deactivated'} by main page`, true);
+        }
+        
+        function sendCommand(command) {
+            const commandData = { command: command, timestamp: Date.now(), source: 'control_panel' };
+            localStorage.setItem('nexus_command', JSON.stringify(commandData));
+            localStorage.setItem('nexus_last_update', Date.now().toString());
+            if(window.opener && !window.opener.closed) {
+                window.opener.postMessage({ type: 'CONTROL_COMMAND', command: command, timestamp: Date.now() }, '*');
+            }
+            addLog(`Command sent: ${command}`, true);
+        }
+        
+        function forceAd() {
+            if(!systemActive) { alert("System is inactive. Start system first."); return; }
+            sendCommand('FORCE_AD');
+            addLog("Forcing ad display...", true);
+            setTimeout(() => {
+                const adCount = parseInt(document.getElementById('adCount').textContent) + 1;
+                document.getElementById('adCount').textContent = adCount;
+            }, 1000);
+        }
+        
+        function adjustBots() {
+            const currentBots = document.getElementById('botCount').textContent.replace(/,/g, '');
+            const newCount = prompt(`Adjust bot count (1000-5000):`, currentBots);
+            if(newCount && !isNaN(newCount) && newCount >= 1000 && newCount <= 5000) {
+                sendCommand(`SET_BOTS:${newCount}`);
+                document.getElementById('botCount').textContent = parseInt(newCount).toLocaleString();
+                addLog(`Bot count set to ${newCount}`, true);
+            } else if(newCount) {
+                alert("Please enter a number between 1000 and 5000");
+            }
+        }
+        
+        function viewStats() {
+            const bots = document.getElementById('botCount').textContent;
+            const ads = document.getElementById('adCount').textContent;
+            const revenue = document.getElementById('revenue').textContent;
+            const uptime = document.getElementById('uptime').textContent;
+            const botCount = parseInt(bots.replace(/,/g, ''));
+            const adCount = parseInt(ads.replace(/,/g, ''));
+            const hourlyEarnings = (botCount * 0.035 * 60).toFixed(2);
+            const dailyEarnings = (hourlyEarnings * 24).toFixed(2);
+            const statsMessage = 
+                `📊 NEXUS ARENA STATISTICS 📊\n\n` +
+                `🤖 Bots Online: ${bots}\n` +
+                `📢 Ads Today: ${ads}\n` +
+                `💰 Revenue: ${revenue}\n` +
+                `⏱️ Uptime: ${uptime}\n` +
+                `🔗 Status: ${systemActive ? 'ACTIVE 🟢' : 'INACTIVE 🔴'}\n` +
+                `📈 Connection: ${connected ? 'CONNECTED' : 'DISCONNECTED'}\n\n` +
+                `📈 ESTIMATED EARNINGS:\n` +
+                `   Hourly: $${hourlyEarnings}\n` +
+                `   Daily: $${dailyEarnings}\n\n` +
+                `🔑 Password: ${PASSWORD}\n` +
+                `🌐 AdSense: ca-pub-6492044095058872`;
+            alert(statsMessage);
+            addLog("Full statistics viewed", true);
+        }
+        
+        function emergencyStop() {
+            if(confirm("🚨 EMERGENCY STOP 🚨\n\nThis will:\n• Immediately stop all bots\n• Stop all ads\n• Clear all commands\n• Preserve revenue data\n\nAre you sure?")) {
+                systemActive = false;
+                sendCommand('EMERGENCY_STOP');
+                localStorage.removeItem('nexus_command');
+                updateControlDisplay();
+                addLog("🚨 EMERGENCY STOP ACTIVATED", true);
+                alert("Emergency stop executed. System offline.");
+            }
+        }
+        
+        function updateControlDisplay() {
+            const statusDisplay = document.getElementById('systemStatusDisplay');
+            const statusText = document.getElementById('statusText');
+            const statusDetails = document.getElementById('statusDetails');
+            const powerButton = document.getElementById('powerButton');
+            const forceAdBtn = document.getElementById('forceAdBtn');
+            const adjustBtn = document.getElementById('adjustBtn');
+            if(systemActive) {
+                statusDisplay.className = 'status-display status-on';
+                statusText.textContent = 'SYSTEM ACTIVE';
+                statusDetails.textContent = connected ? 'Connected to main page' : 'Running offline';
+                statusDetails.style.color = '#00ff00';
+                powerButton.textContent = 'STOP SYSTEM';
+                powerButton.className = 'power-button on';
+                forceAdBtn.disabled = false;
+                adjustBtn.disabled = false;
+            } else {
+                statusDisplay.className = 'status-display status-off';
+                statusText.textContent = 'SYSTEM OFFLINE';
+                statusDetails.textContent = connected ? 'Ready to start' : 'Disconnected';
+                statusDetails.style.color = '#ff0000';
+                powerButton.textContent = 'START SYSTEM';
+                powerButton.className = 'power-button';
+                forceAdBtn.disabled = true;
+                adjustBtn.disabled = true;
+            }
+            updateUptime();
+        }
+        
+        function updateUptime() {
+            const uptimeMs = Date.now() - startTime;
+            const hours = Math.floor(uptimeMs / (1000 * 60 * 60));
+            const minutes = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60));
+            const uptimeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            document.getElementById('uptime').textContent = uptimeString;
+        }
+        
+        function startStatsUpdate() {
+            clearInterval(statsInterval);
+            statsInterval = setInterval(() => { updateStats(); updateUptime(); }, 2000);
+            updateStats();
+        }
+        
+        function updateStats() {
+            const botCount = localStorage.getItem('nexus_bots') || '1847';
+            const adCount = localStorage.getItem('nexus_ads') || '0';
+            const revenue = localStorage.getItem('nexus_revenue') || '0';
+            document.getElementById('botCount').textContent = parseInt(botCount).toLocaleString();
+            document.getElementById('adCount').textContent = parseInt(adCount).toLocaleString();
+            document.getElementById('revenue').textContent = '$' + parseFloat(revenue).toFixed(2);
+            updateConnection(checkLocalStorageConnection());
+        }
+        
+        function startCommandListener() {
+            window.addEventListener('message', function(event) {
+                if(event.data && event.data.type === 'SYSTEM_LOG') {
+                    addLog(event.data.message, true);
+                }
+                if(event.data && event.data.type === 'SYSTEM_STATUS') {
+                    toggleSystemState(event.data.active);
+                }
+                if(event.data && event.data.type === 'PONG') {
+                    updateConnection(true);
+                }
+            });
+        }
+        
+        function addLog(message, highlight = false) {
+            const logContainer = document.getElementById('systemLog');
+            const logEntry = document.createElement('div');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            logEntry.className = 'log-entry' + (highlight ? ' new' : '');
+            logEntry.textContent = `[${time}] ${message}`;
+            logContainer.appendChild(logEntry);
+            while(logContainer.children.length > 20) logContainer.removeChild(logContainer.firstChild);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        document.addEventListener('keydown', function(event) {
+            if(event.ctrlKey && event.key === 'Enter') login();
+            if(event.key === ' ' && document.getElementById('controlSection').style.display !== 'none') {
+                event.preventDefault(); toggleSystem();
+            }
+            if(event.key === 'F1') { event.preventDefault(); forceAd(); }
+            if(event.key === 'F12') { event.preventDefault(); emergencyStop(); }
+        });
+        
+        setTimeout(() => {
+            if(document.getElementById('loginSection').style.display !== 'none') {
+                addLog("💡 Tip: Password is 'nexus777'");
+                addLog("💡 Press Ctrl+Enter after entering password");
+            }
+        }, 3000);
+        
+        initControlSystem();
+    </script>
+</body>
+</html>
