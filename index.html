@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Free Game - Play Now</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 20px; }
+        .header { margin-bottom: 30px; }
+        .game-box { background: #f0f0f0; padding: 20px; border-radius: 10px; max-width: 500px; margin: 0 auto; }
+        .ad-box { background: yellow; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        #adminBtn { position: fixed; top: 20px; right: 20px; }
+    </style>
+</head>
+<body>
+    <button id="adminBtn" onclick="goToAdmin()">Admin Panel</button>
+    
+    <div class="header">
+        <h1>🎮 Free Online Game</h1>
+        <p>Join thousands of players!</p>
+    </div>
+    
+    <div class="game-box">
+        <h3>Game Status</h3>
+        <p>Online Players: <span id="players">1000</span></p>
+        <p>Next Ad: <span id="timer">30</span>s</p>
+        
+        <div class="ad-box" id="ad" style="display:none;">
+            <h3>📢 Advertisement</h3>
+            <p>Watching ad...</p>
+            <p id="countdown">Ad ends in 5 seconds</p>
+        </div>
+        
+        <p><em>Game simulation running...</em></p>
+    </div>
+    
+    <script>
+        // Store earnings
+        let earnings = localStorage.getItem('ad_earnings') ? parseFloat(localStorage.getItem('ad_earnings')) : 0;
+        let adCount = localStorage.getItem('ad_count') ? parseInt(localStorage.getItem('ad_count')) : 0;
+        let bots = 1000;
+        
+        // Start ad cycle
+        let adTimer = 30;
+        setInterval(() => {
+            adTimer--;
+            document.getElementById('timer').textContent = adTimer;
+            
+            if(adTimer <= 0) {
+                showAd();
+                adTimer = 30;
+            }
+        }, 1000);
+        
+        function showAd() {
+            document.getElementById('ad').style.display = 'block';
+            
+            // Simulate 5 second ad
+            let seconds = 5;
+            let countdown = setInterval(() => {
+                seconds--;
+                document.getElementById('countdown').textContent = `Ad ends in ${seconds} seconds`;
+                
+                if(seconds <= 0) {
+                    clearInterval(countdown);
+                    document.getElementById('ad').style.display = 'none';
+                    
+                    // Add earnings - $0.10 per ad shown to 1000 bots
+                    earnings += 100; // $100 per ad cycle
+                    adCount++;
+                    
+                    // Save
+                    localStorage.setItem('ad_earnings', earnings);
+                    localStorage.setItem('ad_count', adCount);
+                    
+                    // Trigger ad scripts
+                    triggerAdNetworks();
+                }
+            }, 1000);
+        }
+        
+        function triggerAdNetworks() {
+            // Load ad network scripts
+            const networks = [
+                'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
+                'https://securepubads.g.doubleclick.net/tag/js/gpt.js'
+            ];
+            
+            networks.forEach(url => {
+                let script = document.createElement('script');
+                script.src = url;
+                document.head.appendChild(script);
+                
+                // Create invisible ad divs
+                let adDiv = document.createElement('div');
+                adDiv.className = 'adsbygoogle';
+                adDiv.style.display = 'none';
+                adDiv.setAttribute('data-ad-client', 'ca-pub-fakeid');
+                adDiv.setAttribute('data-ad-slot', '1234567890');
+                document.body.appendChild(adDiv);
+            });
+        }
+        
+        function goToAdmin() {
+            window.location.href = 'admin.html';
+        }
+        
+        // Update player count
+        setInterval(() => {
+            document.getElementById('players').textContent = 
+                bots + Math.floor(Math.random() * 100);
+        }, 2000);
+    </script>
+</body>
+</html>
